@@ -1,0 +1,5 @@
+Scrapy==1.5.0
+-e git://github.com/aivarsk/scrapy-proxies.git#egg=scrapy-proxies  # use latest to avoid https://github.com/aivarsk/scrapy-proxies/issues/15
+scrapy-fake-useragent==1.1.0
+beautifulsoup4==4.6.0
+cssselect==1.0.3
