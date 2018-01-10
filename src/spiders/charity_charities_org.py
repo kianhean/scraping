@@ -37,6 +37,12 @@ class CharityCharitiesSpider(scrapy.Spider):
 
     def parse(self, response):
         """Callback for parsing responses from each downloaded URL. This function yields the next URL to download."""
+        
+        if self.is_nonprofit_page(response):
+            logger.info('Parsing non profit page {0} ...'.format(
+                urlparse.urlparse(response.request.url).path.rpartition('/')[2]))
+            return self.parse_nonprofit_page(response)
+        
         # if it's a country page (there are other country links such as Environmental/<Coutnryname>.html)
         if self.is_country_page(response.request.url):
             logger.info('Parsing country page ...')
@@ -48,9 +54,6 @@ class CharityCharitiesSpider(scrapy.Spider):
                 urlparse.urlparse(response.request.url).path.rpartition('/')[2]))
             return self.parse_city_page(response)
         # if it's a nonprofit page just save the information to CSV, nothing to yield any more
-        elif self.is_nonprofit_page(response.request.url):
-            self.parse_nonprofit_page(response)
-        return
 
     def parse_country_page(self, response):
         """If this is the first (or country) page we yield the list of cities."""
@@ -65,13 +68,17 @@ class CharityCharitiesSpider(scrapy.Spider):
 
     def parse_city_page(self, response):
         """Yield pagination of city page and yield detail page of non-profit."""
-        # TODO implement
-        pass
+        # TODO implement page scrolling
+        non_profits = response.css('a.ftdnme::attr(href)').extract()
+        for next_page in non_profits:
+            url = response.urljoin(next_page)
+            yield scrapy.Request(url, callback=self.parse)
 
     def parse_nonprofit_page(self, response):
         """Extract and write information on non-profit org to CSV. Nothing to yield (nothing to scrape further)"""
         # TODO implement
-        pass
+        name = response.css('p.profnam::text').extract_first()
+        yield {'name': name}
 
     def is_country_page(self, url):
         # Get first and last path elements in request URL to identify which page we downloaded
@@ -93,6 +100,9 @@ class CharityCharitiesSpider(scrapy.Spider):
             first_path_element == self.url_path.format(self.country)
         )
 
-    def is_nonprofit_page(self, url):
-        # TODO implement
-        return False
+    def is_nonprofit_page(self, response):
+        non_profits = response.css('a.dead::text').extract_first()
+        if non_profits is None:
+            return False
+        else:
+            return True
