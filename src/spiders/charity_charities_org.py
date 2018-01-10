@@ -1,10 +1,15 @@
 import csv
 import logging
-import urlparse
+from urllib.error import HTTPError
+from urllib.parse import urlencode, urlparse
+from urllib.request import Request, urlopen
 
 import scrapy
 from scrapy.http.request import Request
 
+from future.standard_library import install_aliases
+
+install_aliases()
 
 # Only logging will print to console in Scrapy. "print" will not work.
 logging.basicConfig()
@@ -24,13 +29,16 @@ class CharityCharitiesSpider(scrapy.Spider):
         self.country = country
 
         self.url_base = 'http://www.charity-charities.org'
-        self.url_path = '/{0}-charities'  # put slash here because rpartition function extracts it like this (when checking page type in is_city_page, is_country_page, etc.)
+        # put slash here because rpartition function extracts it like this (when checking page type in is_city_page, is_country_page, etc.)
+        self.url_path = '/{0}-charities'
         self.url_page = '{0}.html'
         self.output_file_path = '../output-{0}.csv'.format(self.country)
 
     def start_requests(self):
         """This is the starting point of a spider in Scrapy. It's on override of scrapy.Spider.start_requests"""
-        url = self.url_base + self.url_path.format(self.country) + '/' + self.url_page.format(self.country)
+        url = self.url_base + \
+            self.url_path.format(self.country) + '/' + \
+            self.url_page.format(self.country)
         yield Request(url, self.parse)
 
     def parse(self, response):
@@ -38,10 +46,12 @@ class CharityCharitiesSpider(scrapy.Spider):
         # if it's a country page (there are other country links such as Environmental/<Coutnryname>.html)
         if self.is_country_page(response.request.url):
             logger.info('Parsing country page ...')
-            return self.parse_country_page(response)  # return statement will forward the yielded generator from parse_country_page
+            # return statement will forward the yielded generator from parse_country_page
+            return self.parse_country_page(response)
         # if it's a city page (there are other city links such as <Countryname>-volunteers)
         elif self.is_city_page(response.request.url):
-            logger.info('Parsing city page {0} ...'.format(urlparse.urlparse(response.request.url).path.rpartition('/')[2]))
+            logger.info('Parsing city page {0} ...'.format(
+                urlparse.urlparse(response.request.url).path.rpartition('/')[2]))
             return self.parse_city_page(response)
         # if it's a nonprofit page just save the information to CSV, nothing to yield any more
         elif self.is_nonprofit_page(response.request.url):
@@ -54,7 +64,8 @@ class CharityCharitiesSpider(scrapy.Spider):
         next_pages = response.css('a.nwslink::attr(href)').extract()
         for next_page in next_pages:
             url = response.urljoin(next_page)
-            if self.is_city_page(url):  # only crawl city sub-pages. There are other nwslink anchors that we must skip
+            # only crawl city sub-pages. There are other nwslink anchors that we must skip
+            if self.is_city_page(url):
                 # Yield the next url to download
                 yield scrapy.Request(url, callback=self.parse)
 
@@ -74,9 +85,9 @@ class CharityCharitiesSpider(scrapy.Spider):
         last_path_element = r_parts[2]
         first_path_element = r_parts[0]
         return (
-                last_path_element == self.url_page.format(self.country) and
-                first_path_element == self.url_path.format(self.country)
-           )
+            last_path_element == self.url_page.format(self.country) and
+            first_path_element == self.url_path.format(self.country)
+        )
 
     def is_city_page(self, url):
         # Get first and last path elements in request URL to identify which page we downloaded
@@ -84,9 +95,9 @@ class CharityCharitiesSpider(scrapy.Spider):
         last_path_element = r_parts[2]
         first_path_element = r_parts[0]
         return (
-                last_path_element != self.url_page.format(self.country) and
-                first_path_element == self.url_path.format(self.country)
-           )
+            last_path_element != self.url_page.format(self.country) and
+            first_path_element == self.url_path.format(self.country)
+        )
 
     def is_nonprofit_page(self, url):
         # TODO implement

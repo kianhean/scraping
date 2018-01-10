@@ -1,0 +1,25 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+pylint = "*"
+
+
+[packages]
+
+scrapy = "==1.5.0"
+scrapy-proxies = {git = "git://github.com/aivarsk/scrapy-proxies.git", editable = true}
+scrapy-fake-useragent = "==1.1.0"
+"beautifulsoup4" = "==4.6.0"
+cssselect = "==1.0.3"
+future = "*"
+
+
+[requires]
+
+python_version = "3.6"
