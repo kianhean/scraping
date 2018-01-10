@@ -1,15 +1,9 @@
 import csv
 import logging
-from urllib.error import HTTPError
-from urllib.parse import urlencode, urlparse
-from urllib.request import Request, urlopen
+import urlparse
 
 import scrapy
 from scrapy.http.request import Request
-
-from future.standard_library import install_aliases
-
-install_aliases()
 
 # Only logging will print to console in Scrapy. "print" will not work.
 logging.basicConfig()
