@@ -38,6 +38,7 @@ class CharityCharitiesSpider(scrapy.Spider):
     def parse(self, response):
         """Callback for parsing responses from each downloaded URL. This function yields the next URL to download."""
         
+        # Detect if nonprofit page first, if its the final page just parse it!
         if self.is_nonprofit_page(response):
             logger.info('Parsing non profit page {0} ...'.format(
                 urlparse.urlparse(response.request.url).path.rpartition('/')[2]))
@@ -53,7 +54,6 @@ class CharityCharitiesSpider(scrapy.Spider):
             logger.info('Parsing city page {0} ...'.format(
                 urlparse.urlparse(response.request.url).path.rpartition('/')[2]))
             return self.parse_city_page(response)
-        # if it's a nonprofit page just save the information to CSV, nothing to yield any more
 
     def parse_country_page(self, response):
         """If this is the first (or country) page we yield the list of cities."""
@@ -76,7 +76,7 @@ class CharityCharitiesSpider(scrapy.Spider):
 
     def parse_nonprofit_page(self, response):
         """Extract and write information on non-profit org to CSV. Nothing to yield (nothing to scrape further)"""
-        # TODO implement
+        # TODO implement page scrolling
         name = response.css('p.profnam::text').extract_first()
         yield {'name': name}
 
