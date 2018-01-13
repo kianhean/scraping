@@ -37,13 +37,13 @@ class CharityCharitiesSpider(scrapy.Spider):
 
     def parse(self, response):
         """Callback for parsing responses from each downloaded URL. This function yields the next URL to download."""
-        
+
         # Detect if nonprofit page first, if its the final page just parse it!
         if self.is_nonprofit_page(response):
             logger.info('Parsing non profit page {0} ...'.format(
                 urlparse.urlparse(response.request.url).path.rpartition('/')[2]))
             return self.parse_nonprofit_page(response)
-        
+
         # if it's a country page (there are other country links such as Environmental/<Coutnryname>.html)
         if self.is_country_page(response.request.url):
             logger.info('Parsing country page ...')
@@ -78,7 +78,22 @@ class CharityCharitiesSpider(scrapy.Spider):
         """Extract and write information on non-profit org to CSV. Nothing to yield (nothing to scrape further)"""
         # TODO implement page scrolling
         name = response.css('p.profnam::text').extract_first()
-        yield {'name': name}
+        description = response.css('p.proftxt::text').extract_first()
+        website = response.css('a.profweb::text').extract_first()
+
+        # Collect and parse cause_area
+        cause_area_collection = response.css('a.ftdcat::text').extract()
+        cause_area_output = ''
+        for cause_area in cause_area_collection:
+            cause_area_output += cause_area + ";"
+
+        yield {
+            'name': name.replace(",","").replace('"','').strip(),
+            'country': self.country,
+            'description': description.replace(",","").replace('"','').strip(),
+            'website': website,
+            'cause_area': cause_area_output
+        }
 
     def is_country_page(self, url):
         # Get first and last path elements in request URL to identify which page we downloaded
