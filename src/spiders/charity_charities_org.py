@@ -74,9 +74,17 @@ class CharityCharitiesSpider(scrapy.Spider):
             url = response.urljoin(next_page)
             yield scrapy.Request(url, callback=self.parse)
 
+        # Page Scrolling detect next city page navigation
+        if len(response.css('a.chmlink::attr(href)').extract()) > 0: # If there is a next page link
+            next_city_page = response.css('a.chmlink::attr(href)').extract()[-1]
+            next_page_text = response.css('a.chmlink::text').extract()[-1]
+
+            if next_page_text == "Next >>":
+                url_next = response.urljoin(next_city_page)
+                yield scrapy.Request(url_next, callback=self.parse)
+
     def parse_nonprofit_page(self, response):
         """Extract and write information on non-profit org to CSV. Nothing to yield (nothing to scrape further)"""
-        # TODO implement page scrolling
         name = response.css('p.profnam::text').extract_first()
         description = response.css('p.proftxt::text').extract_first()
         website = response.css('a.profweb::text').extract_first()
