@@ -68,7 +68,6 @@ class CharityCharitiesSpider(scrapy.Spider):
 
     def parse_city_page(self, response):
         """Yield pagination of city page and yield detail page of non-profit."""
-        # TODO implement page scrolling
         non_profits = response.css('a.ftdnme::attr(href)').extract()
         for next_page in non_profits:
             url = response.urljoin(next_page)
@@ -76,11 +75,10 @@ class CharityCharitiesSpider(scrapy.Spider):
 
         # Page Scrolling detect next city page navigation
         if len(response.css('a.chmlink::attr(href)').extract()) > 0: # If there is a next page link
-            next_city_page = response.css('a.chmlink::attr(href)').extract()[-1]
-            next_page_text = response.css('a.chmlink::text').extract()[-1]
+            next_city_page = response.css('a.chmlink::attr(href)').extract()
 
-            if next_page_text == "Next >>":
-                url_next = response.urljoin(next_city_page)
+            for next_city_page_link in next_city_page:
+                url_next = response.urljoin(next_city_page_link)
                 yield scrapy.Request(url_next, callback=self.parse)
 
     def parse_nonprofit_page(self, response):
