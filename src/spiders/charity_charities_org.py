@@ -88,6 +88,7 @@ class CharityCharitiesSpider(scrapy.Spider):
         name = response.css('p.profnam::text').extract_first()
         description = response.css('p.proftxt::text').extract_first()
         website = response.css('a.profweb::text').extract_first()
+        city = response.css('a.ftdlc::text').extract_first()
 
         # Collect and parse cause_area
         cause_area_collection = response.css('a.ftdcat::text').extract()
@@ -101,7 +102,8 @@ class CharityCharitiesSpider(scrapy.Spider):
             'country': self.country,
             'description': description.replace('"','').strip(),
             'website': website,
-            'cause_area': cause_area_output
+            'cause_area': cause_area_output,
+            'city': city
         }
 
     def is_country_page(self, url):

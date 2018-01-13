@@ -15,3 +15,4 @@ class DKSGItem(scrapy.Item):
     website = scrapy.Field()
     cause_area = scrapy.Field()
     country = scrapy.Field()
+    city = scrapy.Field()
