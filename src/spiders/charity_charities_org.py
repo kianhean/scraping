@@ -85,12 +85,13 @@ class CharityCharitiesSpider(scrapy.Spider):
         cause_area_collection = response.css('a.ftdcat::text').extract()
         cause_area_output = ''
         for cause_area in cause_area_collection:
-            cause_area_output += cause_area + ";"
+            if cause_area != "View All":
+                cause_area_output += cause_area + ","
 
         yield {
-            'name': name.replace(",","").replace('"','').strip(),
+            'name': name.replace('"','').strip(),
             'country': self.country,
-            'description': description.replace(",","").replace('"','').strip(),
+            'description': description.replace('"','').strip(),
             'website': website,
             'cause_area': cause_area_output
         }

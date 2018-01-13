@@ -14,6 +14,7 @@ BOT_NAME = 'datakindsg'
 SPIDER_MODULES = ['src.spiders']
 NEWSPIDER_MODULE = 'src.spiders'
 
+CSV_DELIMITER = "\t" # For tab
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'melissa (+http://www.yourdomain.com)'
